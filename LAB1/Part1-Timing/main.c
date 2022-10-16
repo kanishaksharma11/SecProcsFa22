@@ -67,18 +67,20 @@ int main (int ac, char **av) {
     // [1.4] TODO: Measure L2 Latency, store results in l2_latency array
     // ======
     //
-    int l1_sets = 64; //(L1_SIZE)/(64*L1_WAYS);
-    
+    int l1_lines = 512; //(L1_SIZE)/(LINE_SIZE);
+    int reps_l1 = 100;
+
     for(int i=0; i<SAMPLES; i++){
 	    
 	    // Step 1: load target cache line into L1 (and consequently, to L2)
     	    tmp = target_buffer[0];
 
-	    // Step 2: evict all of existing data in L1 by filling it with new addresses
-	    for(int j=0; j<l1_sets; j++){
-		    tmp = eviction_buffer[j+8];
-	    }
-   
+	    // Step 2: evict all of existing data in L1 by filling it with new addresses; do this reps_l1 times
+	    for(int j=0; j<reps_l1; j++){
+	    	for(int k=0; k<l1_lines; k++){
+		    	tmp = eviction_buffer[k*8];
+	    	}
+   	    }
 	    // Step 3: measure the access latency
 	    l2_latency[i] = measure_one_block_access_time((uint64_t)target_buffer);
     }
@@ -87,18 +89,21 @@ int main (int ac, char **av) {
     // [1.4] TODO: Measure L3 Latency, store results in l3_latency array
     // ======
     //
-    int l2_sets = 512;
-    int reps = 100;
+    int l2_lines = 4096; //(L2_SIZE)/(LINE_SIZE)
+    int reps_l2 = 100;
     
     for(int i=0; i<SAMPLES; i++){
-
+    	    //printf("target buffer address: %ld\n", target_buffer);
+	    //printf("eviction buffer address: %ld, %ld\n", &eviction_buffer[0], &eviction_buffer[1]);
+	    //printf("diff: %ld", target_buffer - eviction_buffer);
+	    
 	    // Step 1: load target cache line into L1 (and consequently, to L2 and L3)
 	    tmp = target_buffer[0];
-
-	    // Step 2: evict all of existing data in L2 by filling it with new addresses; do this reps times
-	    for(int j=0; j<reps; j++){
-	    	for(int k=0; k<f*l2_sets; k++){
-			tmp = eviction_buffer[k+8];
+	  
+	    // Step 2: evict all of existing data in L2 by filling it with new addresses; do this reps_l2 times
+	    for(int j=0; j<reps_l2; j++){
+	    	for(int k=0; k<l2_lines; k++){
+			tmp = eviction_buffer[k*8];
 	    	}
 	    }
 
