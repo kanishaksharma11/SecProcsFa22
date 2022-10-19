@@ -35,7 +35,7 @@ int main (int ac, char **av) {
     // [1.4] TODO: Uncomment the following line to allocate a buffer of a size
     // of your chosing. This will help you measure the latencies at L2 and L3.
     // Allocate a buffer of xx.
-    float f = 4;
+    float f = 1.5;
     uint64_t *eviction_buffer = (uint64_t *)malloc(f*32768*sizeof(uint64_t));
     if (NULL == eviction_buffer) {
 	    perror("Unable to malloc eviction_buffer");
@@ -73,7 +73,7 @@ int main (int ac, char **av) {
 	  
 	    // Step 2: evict all of existing data in L2 by filling it with new addresses; do this reps_l2 times
 	    for(int j=0; j<reps_l2; j++){
-	    	for(int k=0; k<2*l2_lines; k++){
+	    	for(int k=0; k<l2_lines; k++){
 			tmp = eviction_buffer[k*8];
 	    	}
 	    }
@@ -98,7 +98,7 @@ int main (int ac, char **av) {
 
 	    // Step 2: evict all of existing data in L1 by filling it with new addresses; do this reps_l1 times
 	    for(int j=0; j<reps_l1; j++){
-	    	for(int k=0; k<2*l1_lines; k++){
+	    	for(int k=0; k<l1_lines; k++){
 		    	tmp = eviction_buffer[k*8];
 	    	}
    	    }
