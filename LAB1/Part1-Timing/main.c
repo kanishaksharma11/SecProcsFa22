@@ -35,13 +35,13 @@ int main (int ac, char **av) {
     // [1.4] TODO: Uncomment the following line to allocate a buffer of a size
     // of your chosing. This will help you measure the latencies at L2 and L3.
     // Allocate a buffer of xx.
-    float f = 1.5;
+    float f = 4;
     uint64_t *eviction_buffer = (uint64_t *)malloc(f*32768*sizeof(uint64_t));
     if (NULL == eviction_buffer) {
 	    perror("Unable to malloc eviction_buffer");
 	    return EXIT_FAILURE;
     }
-
+ 
     // Example: Measure L1 access latency, store results in l1_latency array
     for (int i=0; i<SAMPLES; i++){
         // Step 1: bring the target cache line into L1 by simply accessing the line
@@ -67,8 +67,9 @@ int main (int ac, char **av) {
     // [1.4] TODO: Measure L2 Latency, store results in l2_latency array
     // ======
     //
+    
     int l1_lines = 512; //(L1_SIZE)/(LINE_SIZE);
-    int reps_l1 = 100;
+    int reps_l1 = 1000;
 
     for(int i=0; i<SAMPLES; i++){
 	    
@@ -77,7 +78,7 @@ int main (int ac, char **av) {
 
 	    // Step 2: evict all of existing data in L1 by filling it with new addresses; do this reps_l1 times
 	    for(int j=0; j<reps_l1; j++){
-	    	for(int k=0; k<l1_lines; k++){
+	    	for(int k=0; k<2*l1_lines; k++){
 		    	tmp = eviction_buffer[k*8];
 	    	}
    	    }
@@ -89,8 +90,9 @@ int main (int ac, char **av) {
     // [1.4] TODO: Measure L3 Latency, store results in l3_latency array
     // ======
     //
+    
     int l2_lines = 4096; //(L2_SIZE)/(LINE_SIZE)
-    int reps_l2 = 100;
+    int reps_l2 = 1000;
     
     for(int i=0; i<SAMPLES; i++){
     	    //printf("target buffer address: %ld\n", target_buffer);
@@ -102,7 +104,7 @@ int main (int ac, char **av) {
 	  
 	    // Step 2: evict all of existing data in L2 by filling it with new addresses; do this reps_l2 times
 	    for(int j=0; j<reps_l2; j++){
-	    	for(int k=0; k<l2_lines; k++){
+	    	for(int k=0; k<2*l2_lines; k++){
 			tmp = eviction_buffer[k*8];
 	    	}
 	    }
@@ -114,7 +116,7 @@ int main (int ac, char **av) {
     // Print the results to the screen
     // [1.5] Change print_results to print_results_for_python so that your code will work
     // with the python plotter software
-    print_results_for_python(dram_latency, l1_latency, l2_latency, l3_latency);
+	print_results_for_python(dram_latency, l1_latency, l2_latency, l3_latency);
 
     free(target_buffer);
 
