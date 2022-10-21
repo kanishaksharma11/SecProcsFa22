@@ -93,6 +93,7 @@ int main(int argc, char **argv)
 		      for(int k=0; k<reps; k++){
 		      	for(int j=0; j<8; j++){
 		      		tmp = eviction_set[j+i*8];
+				tmp = eviction_set[j+9*8]; //trigger for receiver
 		      	}
 		      }
 	      } else {

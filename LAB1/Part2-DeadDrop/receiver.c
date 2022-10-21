@@ -33,7 +33,7 @@ int main(int argc, char **argv)
 	volatile char tmp;
 	uint64_t l2_threshold;
 	uint64_t hit_time;
-	uint64_t l1_l3_delta = 7;
+	uint64_t l1_l3_delta = 15;
 	uint64_t hit_time_average = 0;
 	int reps = 10000;
 	int lines = 4096;
@@ -67,10 +67,10 @@ int main(int argc, char **argv)
 	while (listening) {
 		// Put your covert channel code here
 		uint64_t access_time = 0;
-		int hit[8] = {0,0,0,0,0,0,0,0};
-		int miss[8] = {0,0,0,0,0,0,0,0};
+		int hit[9] = {0,0,0,0,0,0,0,0,0};
+		int miss[9] = {0,0,0,0,0,0,0,0,0};
 		char msg[8] = "00000000";
-		for(int i=0; i<8; i++){ //sets
+		for(int i=0; i<9; i++){ //sets
 			for(int j=0; j<8; j++){ //lines
 				access_time = measure_one_block_access_time((uint64_t)(receiver_buffer+8*i+j));
 				if(access_time > hit_time_average+l1_l3_delta){
@@ -91,13 +91,14 @@ int main(int argc, char **argv)
 			}
 			//printf("%d", miss[i]);
 		}
-		//printf("\nmsg=%s", msg);
-		
+		//printf("\nmsg=%s, \tcheck_bit_sum = %d", msg, miss[8]);
+	
 		//printf("\n");
-		char *message;
-		message = binary_to_string(msg);
-		printf("message = %s\n", message);
-
+		if(miss[8] > 6){
+			char *message;
+			message = binary_to_string(msg);
+			printf("message = %s\n", message);
+		}
 
 	}
 
