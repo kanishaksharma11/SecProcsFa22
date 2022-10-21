@@ -13,6 +13,23 @@ int main(int argc, char **argv)
 		return EXIT_FAILURE;
 	}
 
+  uint64_t set_bits = 0;  
+    
+    //search for eviction set
+    uint64_t* eviction_set;
+    
+    for(int i=0; i<32768; i++){
+    	uint64_t val;
+        val = receiver_buffer+i;
+    	//printf("val = %p\n", val);
+        if(set_bits == ((val & ((1 << 18)-1)) >> 6)){
+    	    printf("for set index: %d, found eviction set: %p\n", set_bits, val);
+            eviction_set = receiver_buffer+i;
+            printf("double check. %p\n", eviction_set);
+            break;
+        }
+    }		
+	
 	volatile char tmp;
 	uint64_t l2_threshold;
 	uint64_t hit_time;
@@ -48,44 +65,42 @@ int main(int argc, char **argv)
 
 	bool listening = true;
 	while (listening) {
-		
 		// Put your covert channel code here
 		uint64_t access_time = 0;
-		int hit = 0;
-		int miss = 0;
-		for(int i=0; i<lines; i=i+4){
-			access_time = measure_one_block_access_time((uint64_t)(receiver_buffer+8*i));
-			//printf("access_time = %d\t, threshold to cross for miss = %d\n", access_time, hit_time_average+l1_l3_delta);
-			if(access_time > hit_time_average+l1_l3_delta){
-				miss++;
-			} else {
-				hit ++;
+		int hit[8] = {0,0,0,0,0,0,0,0};
+		int miss[8] = {0,0,0,0,0,0,0,0};
+		char msg[8] = "00000000";
+		for(int i=0; i<8; i++){ //sets
+			for(int j=0; j<8; j++){ //lines
+				access_time = measure_one_block_access_time((uint64_t)(receiver_buffer+8*i+j));
+				if(access_time > hit_time_average+l1_l3_delta){
+					miss[i]++;
+				} else {
+					hit[i]++;
+				}
 			}
-			access_time = measure_one_block_access_time((uint64_t)(receiver_buffer+8*(i+3)));
-			if(access_time > hit_time_average+l1_l3_delta){
-		 		miss++;						             	                } else {
-												                        hit ++;
-			}
-			access_time = measure_one_block_access_time((uint64_t)(receiver_buffer+8*(i+1)));
-                        if(access_time > hit_time_average+l1_l3_delta){
-				miss++;
-		        } else {
-                                hit ++;
-                        }
-			access_time = measure_one_block_access_time((uint64_t)(receiver_buffer+8*(i+2)));
-                        if(access_time > hit_time_average+l1_l3_delta){
-                                miss++;
-                        } else {
-                                hit ++;
-                        }
 		}
-		float miss_ratio;
-	        miss_ratio = (float)miss/((float)hit + (float)miss);
-		//printf("miss = %d\t, hit = %d\t, miss_ratio = %f\n", miss, hit, miss_ratio);
-		if(miss_ratio > 0.26){
-			printf("Received '1'. miss = %d, hit = %d, miss_ratio = %f\n", miss, hit, miss_ratio);
-		}		
-		//printf("Receiver finished.\n");
+		//printf("Message = ");
+		for(int i=0; i<8; i++){
+			if(miss[i] > 3){
+				miss[i] = 1;
+				msg[i] = '1';
+			} else {
+				miss[i] = 0;
+				msg[i] = '0';
+			}
+			//printf("%d", miss[i]);
+		}
+		//printf("\nmsg=%s", msg);
+		
+		//printf("\n");
+		char *message;
+		message = binary_to_string(msg);
+		printf("message = %s\n", message);
+
+
 	}
+
+	//printf("Receiver finished.\n");	
 	return 0;
 }

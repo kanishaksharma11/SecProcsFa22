@@ -28,7 +28,7 @@ int main(int argc, char **argv)
   // Put your covert channel setup code here
 
   //Create a write buffer of size L2 that should be written when input is 1.
-  int f = 1.5;
+  int f = 1;
   uint64_t *sender_buffer = (uint64_t *)malloc(f*32768*sizeof(uint64_t));
   if (NULL == sender_buffer){
 	  perror("Unable to malloc sender buffer");
@@ -36,7 +36,29 @@ int main(int argc, char **argv)
   }
 
   volatile char tmp;
-  int reps = 1000;
+  int reps = 4;
+
+  //printf("starting address = %p\n", sender_buffer);
+
+  //uint64_t test = 10867893;
+  uint64_t set_bits = 0;
+  //set_bits = (test & (1<<18)-1)) >> 6;
+  //printf("test = %d, set_bits = %d", test, set_bits); 
+  
+  //search for eviction set
+  uint64_t* eviction_set;
+
+  for(int i=0; i<32768; i++){
+	uint64_t val;
+	val = sender_buffer+i;
+	//printf("val = %p\n", val);
+	if(set_bits == ((val & ((1 << 18)-1)) >> 6)){
+		printf("for set index: %d, found eviction set: %p\n", set_bits, val);
+		eviction_set = sender_buffer+i;
+		printf("double check. %p\n", eviction_set);
+		break;
+	}
+  }
 
   printf("Please type a message.\n");
 
@@ -51,17 +73,32 @@ int main(int argc, char **argv)
       //printf("input: %s", text_buf);
       
       //If input is 1, load write_buffer into cache
-      if(*text_buf == '1'){
-        	for(int j=0; j<4096; j++){
-	  		tmp = sender_buffer[j*8];
-     		}
-      printf("Sent '1'\n");
+      //if(*text_buf == '1'){
+      //  	for(int j=0; j<4096; j++){
+	//  		tmp = sender_buffer[j*8];
+     	//	}
+      //printf("Sent '1'\n");
+      //}
+      char *binary;
+      binary = string_to_binary(&text_buf);
+      printf("input-in-binary: %s\n", binary);
+      //printf("binary[0] = %d\n", binary[0]);
+      //load those set addresses whose corresponding bit in input is 1.
+      for(int i=0; i<8; i++){
+	      //uint64_t val;
+	      //val = (int)(binary);
+	      //printf("val = %d\n", val);
+	      if('1' == binary[i]){
+		      //printf("1\n");
+		      for(int k=0; k<reps; k++){
+		      	for(int j=0; j<8; j++){
+		      		tmp = eviction_set[j+i*8];
+		      	}
+		      }
+	      } else {
+		    //Do nothing // printf("0\n");
+	      }
       }
-      //char *binary;
-      //binary = string_to_binary(&text_buf);
-      //printf("input-in-binary: %s\n", binary);
-      
-      //sending = false;
   }
 
   printf("Sender finished.\n");
