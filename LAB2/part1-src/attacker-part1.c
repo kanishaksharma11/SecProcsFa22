@@ -31,7 +31,7 @@ char majority(char* array, size_t size) {
 			majority_element = array[i];
 		}
 	}
-return majority_element;
+	return majority_element;
 }
 
 /*
