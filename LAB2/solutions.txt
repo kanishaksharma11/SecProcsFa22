@@ -1,0 +1,14 @@
+# Discussion Question 1
+$ 256 addresses (for 8-bit ASCII encoding; 128 will also work for 7-bit encoding) need to be flushed at the first step. 
+
+# Discussion Question 2
+$ The same attack will not work. We need to create eviction set and use prime+probe to make it work. 
+
+# Discussion Question 3
+$ In this attack, the attacked only controlled the offset value and mistrained the branch predictor to leak the secret. 
+  If the attacker wants to access kernel memory arbitrarily, it needs to find gadgets in kernel where an array in kernel
+  memory is accessed using a user-specified pointer. Although there might be conditional checks on this pointer value, they
+  can likely be bypassed through mistraining the branch predictor. 
+
+# Discussion Question 4
+$ 1 
